@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.0/html2canvas.min.js"></script>
+
+    <title>Супер классный шаблон</title>
+    <style>
+        body{
+            width: 80%;
+            margin: auto;
+        }
+        .result {
+            display: none;
+        }
+
+        canvas {
+            border: 2px solid blue;
+        }
+
+        img{
+            margin: auto;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="html">
+        <h2>Заголовок</h2>
+        <p>
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Facere repudiandae ea libero aspernatur voluptas,
+            possimus iste distinctio sed alias cum officiis quo quis iure explicabo, nulla assumenda asperiores
+            temporibus commodi. Laudantium libero corrupti nisi ab earum, sunt laborum, deleniti ducimus totam quod,
+            deserunt enim consequatur aspernatur soluta nulla eveniet natus!
+        </p>
+        <!-- <img src="cute.jpg"> -->
+        <button onclick="convert()">Создать картинку шаблона</button>
+    </div>
+
+    <div class="result">
+        <a href=""><button>Скачать шаблон (JPG)</button></a>
+        <hr>
+    </div>
+
+    <script>
+        const div = document.querySelector(".html");
+        const result = document.querySelector(".result");
+ 
+        function convert() {
+            html2canvas(div).then(function (canvas) {
+                result.appendChild(canvas);
+                
+                let cvs = document.querySelector("canvas");
+                let dataURI = cvs.toDataURL("image/jpeg");
+                
+                let downloadLink = document.querySelector(".result>a");
+                downloadLink.href = dataURI;
+                downloadLink.download = "div2canvasimage.jpg";
+                
+                console.log(dataURI);
+            });
+            
+            result.style.display = "block";
+        }
+    </script>
+</body>
+</html>
