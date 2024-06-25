@@ -1,0 +1,68 @@
+<html>
+
+<body>
+<div id="container">
+    <button id="generate_btn" onclick='generate_image()'>Нажми меня</button>
+    <img id="img" src="https://processed-model-result.s3.us-east-2.amazonaws.com/48ea8e66-7600-457d-b16e-b6b8aa5f113b_0.png">
+    <img src="https://processed-model-result.s3.us-east-2.amazonaws.com/6190776c-43a4-48b1-8e5e-73624ae04a7b_0.png">
+</div>
+    <script>
+        // document.getElementById('generate_btn').onclick = function (){
+        // img = document.createElement('img');
+        // // img = document.getElementById('img')
+        // id = "49c1b8d8-e4d7-4523-99be-3747f6837970"
+        //     img.src = "https://processed-model-result.s3.us-east-2.amazonaws.com/"+ id + "_0.png";
+        //     document.getElementById('container').appendChild(img);
+        // }
+
+        const options = {
+            method: 'POST',
+            headers: {
+                accept: 'application/json',
+                'content-type': 'application/json',
+                authorization: 'Bearer API_KEY'
+            },
+            body: JSON.stringify({
+                aspect_ratio: 'square',
+                enhance: false,
+                guidance_scale: 7.5,
+                negprompt: 'monochrome, (deformed, distorted, disfigured)',
+                optimize: false,
+                prompt: 'closeup of a PCMR computer with keyboard and wide screen monitors on a desk, \
+                    (computer case with rgb lights and watercooling pipes and large graphics cards)\
+                    in a modern and dark gaming room \
+                    dolly zoom, dutch angle, lens flare, sharp focus, intrincate details',
+                safe_filter: true,
+                samples: 1,
+                seed: 1415,
+                steps: 50,
+                style: 'anime'
+            })
+        };
+
+        function save_image(response){
+            console.log(response['process_id']);
+            img = document.createElement('img');
+            // img = document.getElementById('img')
+            img.src = "https://processed-model-result.s3.us-east-2.amazonaws.com/"+ response['process_id'] + "_0.png";
+            document.getElementById('container').appendChild(img);
+
+        }
+
+        document.getElementById('generate_btn').onclick = generate_image;
+        function generate_image() {
+            fetch('https://api.monsterapi.ai/v1/generate/sdxl-base', options)
+                .then(response => response.json())
+                .then(response => save_image(response))
+                .catch(err => console.error(err));
+
+        }
+
+
+    </script>
+
+</body>
+
+</html>
+
+
