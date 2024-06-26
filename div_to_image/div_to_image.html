@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="style/style.css" rel="stylesheet" type="text/css" />
+    <link href="style//ad_div_style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div>
+        <h1>Awesome Шаблон</h1>
+        <hr>
+        <p id="font-size-text">Размер текста: 20 px</p>
+        <p id="radio-check-text">Цвет фона: lightcyan</p>
+
+            <hr>
+
+            <div id="ad_div" class="ad_div">
+                <p>
+                    Супер-объявление
+                </p>
+                <img id="img" src="https://processed-model-result.s3.us-east-2.amazonaws.com/48ea8e66-7600-457d-b16e-b6b8aa5f113b_0.png">
+            </div>
+
+
+            <b>Выберите размер текста</b>
+            <br>
+            <input type="range" min="10" max="35" id="slider" value="20" onchange="changeSizeBySlider()" />
+            
+            <br>
+            <br>
+            <br>
+            <b>Выберите цвет фона:</b>
+            <div id="radio_container">
+            </div>
+
+            <hr>
+
+            <button type="button" onclick="save_changes()" id="save_btn">Сохранить изменения</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
+
+
