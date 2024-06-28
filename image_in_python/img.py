@@ -24,13 +24,13 @@ from PIL import Image, ImageFont, ImageDraw
 #     return text_img
 
 
-helvetica_path = "image_in_python/fonts/helvetica_regular.otf"
-text = 'LAUGHING IS THE \n BEST MEDICINE'
-font_size = 20
-position = (10, 10)
-align = 'left'
+# helvetica_path = "image_in_python/fonts/helvetica_regular.otf"
+# text = 'LAUGHING IS THE \n BEST MEDICINE'
+# font_size = 20
+# position = (10, 10)
+# align = 'left'
 
-def get_text_img(aspect_ratio, file_name, text, font_size, font_path, color):
+def get_text_img(aspect_ratio, file_name, text, font_size, font_path, color, position, align):
     img = Image.open(f'template_elements/transparent_{aspect_ratio}.png') 
     draw = ImageDraw.Draw(img) 
     font = ImageFont.truetype(font_path, font_size)
