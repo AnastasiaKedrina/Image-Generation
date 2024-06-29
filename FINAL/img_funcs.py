@@ -4,13 +4,10 @@ from PIL import Image
 import numpy as np
 
 
-
-# from rembg import remove
-# input = Image.open('generated_images/obj_1.png')
-# remove(input).save('obj_1.png')
-
 def paste_image(back_img, front_img, x_offset, y_offset):
     # накладывает два изображения с отступом
+    back_img = cv2.cvtColor(back_img, cv2.COLOR_RGB2RGBA)
+    front_img = cv2.cvtColor(front_img, cv2.COLOR_RGB2RGBA)
     y1, y2 = y_offset, y_offset + front_img.shape[0]
     x1, x2 = x_offset, x_offset + front_img.shape[1]
     alpha_s = front_img[:, :, 3] / 255.0
@@ -20,17 +17,18 @@ def paste_image(back_img, front_img, x_offset, y_offset):
                                 alpha_l * back_img[y1:y2, x1:x2, c])
     return back_img
 
-def rotate_resize_brightness(file_path, file_name, deg, img_size, size=1, brightness=1):
+def rotate_resize_brightness(file_path, deg, img_size, size=1, brightness=1):
     # поворот изображение через PIL - сохранение повернутого изображение
     # чтение повернутого изображения через cv2
     # resize изображения по размеру шаблона
+    file_name = file_path.split('/')[1][:-4]
     img = Image.open(file_path)
     if deg!=0:
         img = img.rotate(deg)
     if brightness!=1:
         img = ImageEnhance.Brightness(img).enhance(brightness)
         
-    file_name = f"temp_images/{file_name}_rotated.png"
+    file_name = f"temp_images/{file_name}.png"
     img.save(file_name,"PNG")
     print(f'Изображение {file_name} сохранено')
 
@@ -67,36 +65,3 @@ def get_text_img(aspect_ratio, file_name, text, font_size, font_path, color, pos
             pass
     print(f'Изображение {file_name}.png сохранено')
     return img
-
-
-
- 
-
-# import numpy as np
-# from PIL import Image
-
-# im_cv = cv2.imread('temp_images/title_text.png')
-# gray = cv2.cvtColor(im_cv, cv2.COLOR_BGR2GRAY)
-# x, y, w, h = cv2.boundingRect(cv2.findNonZero(gray))
-# print(x, y, h, w)
-# print(im_cv.shape)
-# im = Image.open('temp_images/title_text.png')
-# im.save('new_file_1.png')
-# im.crop((10, 10, 10, 10))
-# print(im.size)
-
-# im = im.convert('RGBA')
-# data = np.array(im)
-# # just use the rgb values for comparison
-# rgb = data[:,:,:3]
-# color = [246, 213, 139]   # Original value
-# black = [0,0,0, 255]
-# white = [255,255,255,255]
-# mask = np.all(rgb == color, axis = -1)
-# # change all pixels that match color to white
-# data[mask] = white
-
-# # change all pixels that don't match color to black
-# ##data[np.logical_not(mask)] = black
-# new_im = Image.fromarray(data)
-# new_im.save('new_file.png')
