@@ -17,25 +17,27 @@ def template_from_images(images, img_size):
         if blur!=(0,0):
             locals()[img] = cv2.blur(locals()[img], blur)
             
-        
-        if img == list(images.keys())[1]:
-            image = paste_image(locals()[list(images.keys())[0]], locals()[img], *images[img]['pos'])
+        img_name = img
+        if img == list(images.keys())[1]: 
+            # накладываем первое изображение на второе 
+            image = paste_image(img_name, locals()[list(images.keys())[0]], locals()[img], *images[img]['pos'])
         elif img != list(images.keys())[0]:
-            image = paste_image(image, locals()[img], *images[img]['pos'])
+            # все остальные изображения, накладываем их друг на друга по-очереди
+            image = paste_image(img_name, image, locals()[img], *images[img]['pos'])
     return image
 
-def paste_text_images(image, texts, aspect_ratio):
+def paste_text_images(image, texts):
     # возвращает изображение с текстом
     texts_layers = []
     for text in texts.keys():
         current_text = text
         current_text_d = texts[current_text]
-        text_img = get_text_img(aspect_ratio, current_text, 
+        text_img = get_text_img(current_text, 
                                 current_text_d['text'], current_text_d['font_size'], 
                                 current_text_d['font'], current_text_d['color'], 
                                 current_text_d['pos'], current_text_d['align'])
         # current_text_img = cv2.imread(f"temp_images/{current_text}.png", -1)
-        image = paste_image(image, text_img, *current_text_d['pos'])
+        image = paste_image(current_text_d['text'][:10], image, text_img, *current_text_d['pos'])
     return image
 
 def get_position(
@@ -58,22 +60,8 @@ def get_position(
     # print(x, y)
     return (x, y)
 
-def create_template_1(back_img_path, obj_img_path, aspect_ratio):
-
-    aspect_ratios_array = {'square': (1024, 1024), 'portrait':(768, 1024), 'landscape':(1024, 768)}
-    img_size = aspect_ratios_array[aspect_ratio]
-
-    fonts = {
-        'helvetica': "fonts/helvetica_regular.otf"
-        }
-    colors = {
-        # RGBA
-        # текст расчитан только на белый и черный, так как убирается фон
-        'white' : (255, 255, 255, 255),
-        'black' : (0, 0, 0, 255)
-    }
-
-
+# --------------------------------------------------------
+def create_portrait_template_1(back_img_path, obj_img_path, img_size, fonts, colors):
     texts = {
         'title_text':{
             'text':add_line_break("ИГРОВАЯ МЫШЬ", 7), # число символов в одной строке до переноса
@@ -130,7 +118,7 @@ def create_template_1(back_img_path, obj_img_path, aspect_ratio):
             'brightness': 0.5 # яркость, 1 обычная
         },
         'white_diagonal_img':{
-            'path_to_img': "template_elements/white_diagonal.png",
+            'path_to_img': "template_elements/portrait_diagonal.png",
             'size': 1,
             'pos':(0, 0),
             'rotation': 0, 
@@ -164,14 +152,217 @@ def create_template_1(back_img_path, obj_img_path, aspect_ratio):
     }
 
     final_template = template_from_images(images, img_size)
-    final_template = paste_text_images(final_template, texts, aspect_ratio)
+    final_template = paste_text_images(final_template, texts)
 
     uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '-')
     # uniq_filename = 'result'
     cv2.imwrite(f'template_results/{uniq_filename}.png', final_template)
-    print('---итоговый шаблон сохранен')
+    cv2.imwrite(f'template_results/last_result.png', final_template)
+    print(f'---ШАБЛОН {img_size} СОХРАНЕН')
 
 
-    # cv2.imshow('img', image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+# --------------------------------------------------------
+def create_square_template_1(back_img_path, obj_img_path, img_size, fonts, colors):
+    texts = {
+        'title_text':{
+            'text':add_line_break("ИГРОВАЯ МЫШЬ", 7), # число символов в одной строке до переноса
+            # 'pos':(get_position('left', 'top', 1, 1)), # отсчет от верхнего левого края, (1,1) начальные коожинаты сетки
+            'pos':(get_position(0, 0, offset_x=20, offset_y=20)),
+            'font': fonts['helvetica'],
+            'font_size':56,
+            'color': colors['black'],
+            'align': 'left'
+        }, 
+        'subtitle_text':{
+            'text':add_line_break("6 кнопок полностью программируемые", 20),
+            'pos':(get_position(7, 2)),
+            'font': fonts['helvetica'],
+            'font_size':36,
+            'color': colors['black'],
+            'align': 'left'
+        }, 
+        'address_text':{
+            'text':add_line_break("ул. Снежная д.3", 20),
+            # 'pos':(get_position('left', 'top', 1, 19)), # right и bottom пока не работают, убрала эти поля полностю
+            'pos':(get_position(6, 8)),
+            'font': fonts['helvetica'],
+            'font_size':26,
+            'color': colors['white'],
+            'align': 'right'
+        }, 
+        'phone_text':{
+            'text':phone_format('88005353535'),
+            'pos':(get_position(7, 18)),
+            'font': fonts['helvetica'],
+            'font_size':56,
+            'color': colors['black'],
+            'align': 'right'
+        }, 
+        'button_text':{
+            'text':'Узнать больше',
+            'pos':(get_position(1, 18)), #, offset_x=20, offset_y=20)),
+            'font': fonts['helvetica'],
+            'font_size':40,
+            'color': colors['black'],
+            'align': 'left'
+        }
+    }
+
+
+    images = {
+        'back_img':{
+            'path_to_img': f'{back_img_path}.png',
+            'size': 1, # коэффициет (1 - не менять размер)
+            'pos':(0, 0), # px
+            'rotation': 0, # градусов
+            'blur': (10, 10), # размер блюра
+            'brightness': 0.5 # яркость, 1 обычная
+        },
+        'white_back_img':{
+            'path_to_img': "template_elements/square_circle.png",
+            'size': 1,
+            'pos':(0, 0),
+            'rotation': 0, 
+            'blur': (0, 0),
+            'brightness': 1
+        },
+        'white_button_img':{
+            'path_to_img': "template_elements/white_button.png",
+            'size': 1,
+            'pos':(get_position(1, 10)),
+            'rotation': 0, 
+            'blur': (0, 0),
+            'brightness': 1
+        },
+        'obj_shadow_img':{ # тень для объекта - то же изображение, но с блюром
+            'path_to_img': f'{obj_img_path}.png',
+            'size': 0.6,
+            'pos':(get_position(3, 4, offset_x=5, offset_y=5)), # координаты тени должны совпадать с объектом + отступ
+            'rotation': -45, 
+            'blur': (70, 70),
+            'brightness': 1
+        },
+        'obj_img':{
+            'path_to_img': f'{obj_img_path}.png',
+            'size': 0.6,
+            'pos':(get_position(3, 4)),
+            'rotation': -45, 
+            'blur': (0, 0),
+            'brightness': 1
+        }
+    }
+
+    final_template = template_from_images(images, img_size)
+    final_template = paste_text_images(final_template, texts)
+
+    uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '-')
+    # uniq_filename = 'result'
+    cv2.imwrite(f'template_results/{uniq_filename}.png', final_template)
+    cv2.imwrite(f'template_results/last_result.png', final_template)
+    print(f'---ШАБЛОН {img_size} СОХРАНЕН')
+
+
+# --------------------------------------------------------
+def create_square_template_2(back_img_path, obj_img_path, img_size, fonts, colors):
+    pass
+
+
+# --------------------------------------------------------
+def create_landscape_template_1(back_img_path, obj_img_path, img_size, fonts, colors):
+    texts = {
+        'title_text':{
+            'text':add_line_break("ИГРОВАЯ МЫШЬ", 7), # число символов в одной строке до переноса
+            # 'pos':(get_position('left', 'top', 1, 1)), # отсчет от верхнего левого края, (1,1) начальные коожинаты сетки
+            'pos':(get_position(0, 0, offset_x=20, offset_y=20)),
+            'font': fonts['helvetica'],
+            'font_size':56,
+            'color': colors['white'],
+            'align': 'left'
+        }, 
+        'subtitle_text':{
+            'text':add_line_break("6 кнопок полностью программируемые", 20),
+            'pos':(get_position(7, 2)),
+            'font': fonts['helvetica'],
+            'font_size':36,
+            'color': colors['white'],
+            'align': 'left'
+        }, 
+        'address_text':{
+            'text':add_line_break("ул. Снежная д.3", 20),
+            # 'pos':(get_position('left', 'top', 1, 19)), # right и bottom пока не работают, убрала эти поля полностю
+            'pos':(get_position(6, 8)),
+            'font': fonts['helvetica'],
+            'font_size':26,
+            'color': colors['white'],
+            'align': 'right'
+        }, 
+        'phone_text':{
+            'text':phone_format('88005353535'),
+            'pos':(get_position(6, 14)),
+            'font': fonts['helvetica'],
+            'font_size':56,
+            'color': colors['white'],
+            'align': 'right'
+        }, 
+        'button_text':{
+            'text':'Узнать больше',
+            'pos':(get_position(1,11)), #, offset_x=20, offset_y=20)),
+            'font': fonts['helvetica'],
+            'font_size':40,
+            'color': colors['black'],
+            'align': 'left'
+        }
+    }
+
+
+    images = {
+        'back_img':{
+            'path_to_img': f'{back_img_path}.png',
+            'size': 1, # коэффициет (1 - не менять размер)
+            'pos':(0, 0), # px
+            'rotation': 0, # градусов
+            'blur': (10, 10), # размер блюра
+            'brightness': 0.5 # яркость, 1 обычная
+        },
+        'white_back_img':{
+            'path_to_img': "template_elements/landscape_side.png",
+            'size': 1,
+            'pos':(0, 0),
+            'rotation': 0, 
+            'blur': (0, 0),
+            'brightness': 1
+        },
+        'white_button_img':{
+            'path_to_img': "template_elements/white_button.png",
+            'size': 1,
+            'pos':(get_position(1, 10)),
+            'rotation': 0, 
+            'blur': (0, 0),
+            'brightness': 1
+        },
+        'obj_shadow_img':{ # тень для объекта - то же изображение, но с блюром
+            'path_to_img': f'{obj_img_path}.png',
+            'size': 0.4,
+            'pos':(get_position(5, 4, offset_x=5, offset_y=5)), # координаты тени должны совпадать с объектом + отступ
+            'rotation': -45, 
+            'blur': (70, 70),
+            'brightness': 1
+        },
+        'obj_img':{
+            'path_to_img': f'{obj_img_path}.png',
+            'size': 0.4,
+            'pos':(get_position(5, 4)),
+            'rotation': -45, 
+            'blur': (0, 0),
+            'brightness': 1
+        }
+    }
+
+    final_template = template_from_images(images, img_size)
+    final_template = paste_text_images(final_template, texts)
+
+    uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '-')
+    # uniq_filename = 'result'
+    cv2.imwrite(f'template_results/{uniq_filename}.png', final_template)
+    cv2.imwrite(f'template_results/last_result.png', final_template)
+    print(f'---ШАБЛОН {img_size} СОХРАНЕН')

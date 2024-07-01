@@ -1,20 +1,21 @@
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 import cv2
-from PIL import Image
-import numpy as np
 
 
-def paste_image(back_img, front_img, x_offset, y_offset):
+def paste_image(img_name, back_img, front_img, x_offset, y_offset):
     # накладывает два изображения с отступом
     back_img = cv2.cvtColor(back_img, cv2.COLOR_RGB2RGBA)
     front_img = cv2.cvtColor(front_img, cv2.COLOR_RGB2RGBA)
     y1, y2 = y_offset, y_offset + front_img.shape[0]
     x1, x2 = x_offset, x_offset + front_img.shape[1]
-    alpha_s = front_img[:, :, 3] / 255.0
-    alpha_l = 1.0 - alpha_s
-    for c in range(0, 3):
-        back_img[y1:y2, x1:x2, c] = (alpha_s * front_img[:, :, c] +
-                                alpha_l * back_img[y1:y2, x1:x2, c])
+    try:
+        alpha_s = front_img[:, :, 3] / 255.0
+        alpha_l = 1.0 - alpha_s
+        for c in range(0, 3):
+            back_img[y1:y2, x1:x2, c] = (alpha_s * front_img[:, :, c] +
+                                    alpha_l * back_img[y1:y2, x1:x2, c])
+    except ValueError:
+        print(f'---Не удалось вставить изображение "{img_name}"')
     return back_img
 
 def rotate_resize_brightness(file_path, deg, img_size, size=1, brightness=1):
@@ -41,14 +42,13 @@ def rotate_resize_brightness(file_path, deg, img_size, size=1, brightness=1):
     return img
 
 
-def get_text_img(aspect_ratio, file_name, text, font_size, font_path, color, position, align):
+def get_text_img(file_name, text, font_size, font_path, color, position, align):
     # сохраняет изображние с текстом по заданным параметрам
     file_name = f"temp_images/{file_name}.png"
     font = ImageFont.truetype(font_path, font_size)
     text_mask = font.getmask(text, "L")
     break_num = text.count('\n')+1
     img = Image.new("RGBA", (text_mask.size[0], text_mask.size[1]*break_num*2))
-    # img = Image.open(f'template_elements/transparent_{aspect_ratio}.png') 
     draw = ImageDraw.Draw(img)
     draw.text((0,0), text, font = font, align = align, fill = color) 
     img.save(file_name,"PNG")
