@@ -553,6 +553,30 @@ async def analyze_data(request: Request):
         raise HTTPException(status_code=500, detail=f"Ошибка при анализе данных: {str(e)}")
 
 
+
+@app.post("/img-generation-form", response_class=HTMLResponse)
+async def img_generation_form_post(request: Request):
+    url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/a6d21138-ec38-4d7a-8bd0-8fcfbf304f61_0.png'
+    await run_subprocess(['python', 'image_generation/image_generation.py', url])
+    
+
+@app.get("/img-generation-form", response_class=HTMLResponse)
+async def img_generation_form(request: Request):
+    logging.info(f"HTTP GET request to /img-generation-form: {request.client.host}")
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        return HTMLResponse(content="<script>window.location.href = '/';</script>", status_code=401)
+    query = select(sessions).where(sessions.c.token == session_token)
+    session = await database.fetch_one(query)
+    if not session:
+        return HTMLResponse(content="<script>window.location.href = '/';</script>", status_code=401)
+
+    # user_id = session["user_id"]
+    return templates.TemplateResponse("img-generation-form.html", {"request": request, "session": session})
+
+
+
+
 @app.on_event("startup")
 async def startup():
     metadata.create_all(engine)
