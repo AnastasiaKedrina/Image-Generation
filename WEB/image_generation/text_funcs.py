@@ -1,4 +1,5 @@
 import re
+import json
 
 def phone_format(phone):
     phone = phone.removeprefix("+")
@@ -19,3 +20,9 @@ def add_line_break(text, length):
         s.append(i)
     return ' '.join(s)
 
+def get_GPT_headings():
+    with open('parsed_data.json', encoding="utf8") as json_file:
+        parsed_data = json.load(json_file)
+    with open('gpt_output.json', encoding="utf8") as json_file:
+        gpt_output = json.load(json_file)
+    return parsed_data, gpt_output

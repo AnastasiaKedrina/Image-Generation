@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генерация</title>
+    <link rel="stylesheet" type="text/css" href="/image_generation/res_css/gen_style.css">
+    <script defer src="/image_generation/script/gen_script.js"></script>
+    <link rel="shortcut icon" href="res/logo_icon.png" type="image/png">
+</head>
+<body>
+    <!-- <header>
+        
+        <button class="login-btn">
+            <img src="login-icon.png" alt="Вход">
+        </button>
+    </header> -->
+    <main>
+        <h1 id="shadow">ГЕНЕРАЦИЯ</h1>
+        <h1>ГЕНЕРАЦИЯ</h1>
+        <div class="container">
+            <button id="arrow-left" class="scroll-btn left"><img src="/static/res/left.png" alt="Left"></button>
+            <div class="center-block">
+                <div class="image-wrapper">
+                    <img src="/image_generation/result_templates/result_square.png" alt="Image 1" class="slide">
+                    <img src="/image_generation/result_templates/result_portrait.png" alt="Image 2" class="slide">
+                    <img src="/image_generation/result_templates/result_landscape.png" alt="Image 3" class="slide">
+                </div>
+            </div>
+            <button id="arrow-right" class="scroll-btn right"><img src="/static/res/right.png" alt="Right"></button>
+        </div>
+    </main>
+    <footer>
+        <button class="footer-btn left" onclick="window.location.href='form-img-page.html'">Редактировать анкету</button>
+        <button class="footer-btn center continue-btn" style="display: none;" onclick="window.location.href='constructor.html'">Продолжить</button>
+        <button class="footer-btn right">Сгенерировать еще раз</button> <!-- обновляем изображения - генерирует еще раз по тому же промпту -->
+    </footer>
+</body>
+</html>

@@ -9,6 +9,32 @@ from monster_api import SD_background_generation, SD_transparent_object_generati
 from template import create_square_template_1, create_square_template_2
 from template import create_portrait_template_1
 from template import create_landscape_template_1
+from text_funcs import get_GPT_headings, phone_format
+
+
+def removed_bg_url_edenai_API(img_url, api_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjczM2VjYjItMmY0NS00ZjRmLWE0NWMtMTYzNWY1MTE3OTM3IiwidHlwZSI6ImFwaV90b2tlbiJ9.I6nbV889koTKmJlLvUjkGKrXwELVH2KlY75yMlpCBp8'):
+    url="https://api.edenai.run/v2/image/background_removal"
+    providers = "api4ai"
+    
+    headers = {"Authorization": f"Bearer {api_key}"}
+    json_payload={
+        "providers": providers,
+        "file_url": img_url
+    }
+    response = requests.post(url, json=json_payload, headers=headers)
+    result = json.loads(response.text)
+    print(f'Изображение без фона: {result[providers]["image_resource_url"]}')
+    return result[providers]['image_resource_url']
+
+def removed_bg_url_removal_API(file_path):
+  url = "https://api.removal.ai/3.0/remove"
+  payload={'image_url': 'url_to_image'}
+  files=[('image_file',('(PNG Image, 1024 × 1024 pixels).png',open(file_path+'.png','rb'),'image/png'))]
+  headers = {
+    'Rm-Token': 'E6BEE6CF-995E-CFF5-F0FA-60EEE4D48102'
+  }
+  response = requests.request("POST", url, headers=headers, data=payload, files=files)
+  return response.text
 
 
 def url_to_img_file(img_url, filename = 'uniq'):
@@ -48,7 +74,8 @@ def get_promt_style(input_style):
 
 def remove_background(file_name):
     input = Image.open(f'{file_name}.png')
-    remove(input).save(f'{file_name}_transparent.png')
+    img = remove(input)
+    img.save(f'{file_name}_transparent.png')
     print(f'Изображение {file_name}_transparent.png сохранено')
 
 def generate_and_save_image(img_type, object_promt, file_path, style, color):
@@ -65,17 +92,52 @@ def generate_and_save_image(img_type, object_promt, file_path, style, color):
     return file_path
   else:
     # obj_img_url = SD_transparent_object_generation(object_promt)#, style_negative_promt)
-    obj_img_url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/1a7c72df-6781-453b-be7b-21167d06f984_0.png'
+    obj_img_url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/f2246e88-0749-4ff6-bf40-1d5fa5af1e8c_0.png'
     print(f'Сгенерировано изображение на белом фоне:{obj_img_url}')
-    url_to_img_file(obj_img_url)#, style_name)
     url_to_img_file(obj_img_url, file_path)#, style_name)
-    remove_background(file_path)
-
+    url_to_img_file(removed_bg_url_edenai_API(obj_img_url), file_path+'_transparent')
+    # url_to_img_file(removed_bg_url_removal_API(file_path), file_path+'_transparent')
+    # remove_background(file_path)
 
 
 
 
 if __name__ == "__main__":
+
+  input_data = json.load(sys.stdin)
+
+  form = [
+          input_data.get("field_1"),
+          input_data.get("field_2"),
+          input_data.get("field_3"),
+          input_data.get("field_4"),
+          input_data.get("field_5"), 
+          input_data.get("field_6"), 
+          input_data.get("field_7"),
+          input_data.get("field_8"),
+          input_data.get("field_9"), 
+          input_data.get("field_10"), 
+          input_data.get("field_11")
+  ]
+  
+  print(form)
+  # description = input_data.get("description")
+  # size = input_data.get("size")
+  # url_to_img_file(description)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   fonts = {
       'helvetica': "image_generation/fonts/helvetica_regular.otf"
       }
@@ -90,8 +152,6 @@ if __name__ == "__main__":
                         'portrait': {'size':(768, 1024), 'funcs':[create_portrait_template_1]},
                         'landscape': {'size':(1024, 768), 'funcs':[create_landscape_template_1]}}
 
-
-
   style_name = 'PHOTOGRAPHY'
   # object_promt = 'gaming laptop, open, led keyboard, led lighting around the screen, gaming computers and peripherals'
   object_promt = 'computer gaming mouse, led light, led mouse buttons'
@@ -101,36 +161,25 @@ if __name__ == "__main__":
   style = [style_promt, style_negative_promt] 
   color = [colors_promt, '']
 
+  parsed_data, gpt_output = get_GPT_headings()
+  text_data = {
+    'title_text': gpt_output['Заголовок'].replace('Заголовок: ', ''),
+    'subtitle_text': gpt_output['Текст'].replace('Текст: ', ''),
+    'address_text': 'ул. Ленина д.3',
+    'phone_text': phone_format('88005353500'),
+    'button_text': 'Купить'
+  }
 
   obj_file_path = 'image_generation/generated_images/obj'
   back_file_path = 'image_generation/generated_images/back'
   # --генерация изображений
-  generate_and_save_image('back' , object_promt, back_file_path, style, color)
-  generate_and_save_image('object' , object_promt, obj_file_path, style, color)
-
+  # generate_and_save_image('back' , object_promt, back_file_path, style, color)
+  # generate_and_save_image('object' , object_promt, obj_file_path, style, color)
   obj_file_path = obj_file_path+'_transparent'
-
  
   # --создание шаблона
-  aspect_ratio = list(aspect_ratios.keys())[0] # ----------- соотношение сторон, 0 - square, 1 - portrait, 2 - landscape
-  # вызов функций create_*_template, в зависимости от выбранного соотношения сторон
-  # for aspect_ratio in aspect_ratios.keys(): 
-  img_size = aspect_ratios[aspect_ratio]['size']
+  aspect_ratio = 'square'
+  # create_square_template_1(back_file_path, obj_file_path, aspect_ratio, (1024, 1024), fonts, colors, text_data)
+  # create_portrait_template_1(back_file_path, obj_file_path, aspect_ratio, (768, 1024), fonts, colors, text_data)
+  # create_landscape_template_1(back_file_path, obj_file_path, aspect_ratio, (1024, 768), fonts, colors, text_data)
 
-  template_num = 1 # номер шаблона ( 1 - create_square_template_1, 2 - create_square_template_2
-  template_func = aspect_ratios[aspect_ratio]['funcs'][template_num-1]
-    
-    # locals()[aspect_ratios[aspect_ratio][template_func(back_file_path, obj_file_path, img_size, fonts, colors)]]
-  print('create_square_template_1')
-  create_square_template_1(back_file_path, obj_file_path, (1024, 1024), fonts, colors)
-
-  # тот же вызов функций
-  # create_square_template_1('image_generation/generated_images/square_back', obj_file_path, (1024, 1024), fonts, colors)
-  # create_portrait_template_1('image_generation/generated_images/portrait_back', obj_file_path, (768, 1024), fonts, colors)
-  # create_landscape_template_1('image_generation/generated_images/landscape_back', obj_file_path, (1024, 768), fonts, colors)
-
-
-  # input_data = json.load(sys.stdin)
-  # description = input_data.get("description")
-  # size = input_data.get("size")
-  # url_to_img_file(description)

@@ -563,17 +563,24 @@ async def analyze_data(request: Request):
 #     await run_subprocess(['python', 'image_generation/image_generation.py', url])
     
 @app.post("/img-generation-form", response_class=HTMLResponse)
-async def img_generation_form_post(request: Request, description: str = Form(...), size: str = Form(...)):
-    input_data = {"description": description, "size": size}
-    input_json = json.dumps(input_data).encode()
+async def img_generation_form_post(request: Request, 
+    field_1: str = Form(...), field_2: str = Form(...), field_3: str = Form(...), 
+    field_4: str = Form(...), field_5: str = Form(...), field_6: str = Form(...), 
+    field_7: str = Form(...), field_8: str = Form(...), field_9: str = Form(...), 
+    field_10: str = Form(...), field_11: str = Form(...)):
+    input_data = {"field_1": field_1, "field_2": field_2, "field_3": field_3, 
+                    "field_4": field_4, "field_5": field_5, "field_6": field_6, 
+                    "field_7": field_7, "field_8": field_8, "field_9": field_9, 
+                    "field_10": field_10, "field_11": field_11}
+    input_json = json.dumps(input_data)
     
     
     process = subprocess.Popen(['python', 'image_generation/image_generation.py'], stdin=subprocess.PIPE)
-    process.communicate(input=input_json)
+    process.communicate(input=input_json.encode())
     # await run_subprocess(['python', 'image_generation/image_generation.py', input_json])
 
     # return HTMLResponse(content="<p>Image generation started. Check logs for details.</p>")
-    return templates.TemplateResponse("img-generation-form.html", {"request": request, "data": input_json})
+    # return templates.TemplateResponse("generation-page.html", {"request": request, "data": input_json})
 
 
 @app.get("/img-generation-form", response_class=HTMLResponse)
@@ -586,9 +593,35 @@ async def img_generation_form(request: Request):
     session = await database.fetch_one(query)
     if not session:
         return HTMLResponse(content="<script>window.location.href = '/img-generation-form';</script>", status_code=401)
-
     # user_id = session["user_id"]
     return templates.TemplateResponse("img-generation-form.html", {"request": request, "session": session})
+
+
+@app.get("/form-img-page", response_class=HTMLResponse)
+async def img_generation_form(request: Request):
+    logging.info(f"HTTP GET request to /form-img-page: {request.client.host}")
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        return HTMLResponse(content="<script>window.location.href = '/form-img-page';</script>", status_code=401)
+    query = select(sessions).where(sessions.c.token == session_token)
+    session = await database.fetch_one(query)
+    if not session:
+        return HTMLResponse(content="<script>window.location.href = '/form-img-page';</script>", status_code=401)
+    # user_id = session["user_id"]
+    return templates.TemplateResponse("form-img-page.html", {"request": request, "session": session})
+
+@app.get("/generation-page", response_class=HTMLResponse)
+async def img_generation_form(request: Request):
+    logging.info(f"HTTP GET request to /generation-page: {request.client.host}")
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        return HTMLResponse(content="<script>window.location.href = '/generation-page';</script>", status_code=401)
+    query = select(sessions).where(sessions.c.token == session_token)
+    session = await database.fetch_one(query)
+    if not session:
+        return HTMLResponse(content="<script>window.location.href = '/generation-page';</script>", status_code=401)
+    # user_id = session["user_id"]
+    return templates.TemplateResponse("generation-page.html", {"request": request, "session": session})
 
 
 @app.on_event("startup")

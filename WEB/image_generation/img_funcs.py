@@ -22,14 +22,14 @@ def rotate_resize_brightness(file_path, deg, img_size, size=1, brightness=1):
     # поворот изображение через PIL - сохранение повернутого изображение
     # чтение повернутого изображения через cv2
     # resize изображения по размеру шаблона
-    file_name = file_path.split('/')[1]
+    file_name = file_path.split('/')[2]
     img = Image.open(file_path)
     if deg!=0:
         img = img.rotate(deg)
     if brightness!=1:
         img = ImageEnhance.Brightness(img).enhance(brightness)
         
-    file_name = f"image_generation/temp_images/{file_name}.png"
+    file_name = f"image_generation/temp_images/{file_name}"
     img.save(file_name,"PNG")
     print(f'Изображение {file_name} сохранено')
 
