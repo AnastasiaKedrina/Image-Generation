@@ -11,11 +11,15 @@ from template import create_portrait_template_1
 from template import create_landscape_template_1
 
 
-def url_to_img_file(img_url):
-  folder_name = 'image_generation/rest_images'
-  uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '-')
+def url_to_img_file(img_url, filename = 'uniq'):
   result_image = Image.open(requests.get(img_url, stream=True).raw)
-  result_image.save(f"{folder_name}/all/{uniq_filename}.png")
+  if filename == 'uniq':
+    uniq_filename = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time()).replace(':', '-')
+    file_path = f"image_generation/rest_images/{uniq_filename}.png"
+  else:
+    file_path = f"{filename}.png"
+  result_image.save(file_path)
+  print(f'Изображение {file_path} сохранено')
 
 
 # def url_to_img_file(img_url, filename='uniq', filename_prefix=''):
@@ -43,28 +47,30 @@ def get_promt_style(input_style):
             return promt, negative_promt
 
 def remove_background(file_name):
-    input = Image.open(f'image_generation/{file_name}.png')
-    remove(input).save(f'image_generation/{file_name}_transparent.png')
+    input = Image.open(f'{file_name}.png')
+    remove(input).save(f'{file_name}_transparent.png')
     print(f'Изображение {file_name}_transparent.png сохранено')
 
-def generate_and_save_image(img_type, object_promt, aspect_ratio, file_path, style, color):
+def generate_and_save_image(img_type, object_promt, file_path, style, color):
   style_promt, style_negative_promt = style
   colors_promt, colors_negative_promt = color
 
   if img_type=='back':
     input_promt = f'room designed for {object_promt}, all the objects in the room are positioned correctly and stylized, ' + style_promt + colors_promt
-    background_img_url = SD_background_generation(input_promt, style_negative_promt,  aspect_ratio=aspect_ratio) #colors_negative_promt
+    # background_img_url = SD_background_generation(input_promt, style_negative_promt) #colors_negative_promt
+    background_img_url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/8a4077ee-f1dd-4821-934e-98a090ae3126_0.png'
     print(f'Сгенерировано изображение для фона: {background_img_url}')
     url_to_img_file(background_img_url)#, filename_prefix=style_name)
     url_to_img_file(background_img_url, file_path)
     return file_path
   else:
-    obj_img_url = SD_transparent_object_generation(object_promt)#, style_negative_promt)
+    # obj_img_url = SD_transparent_object_generation(object_promt)#, style_negative_promt)
+    obj_img_url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/1a7c72df-6781-453b-be7b-21167d06f984_0.png'
     print(f'Сгенерировано изображение на белом фоне:{obj_img_url}')
     url_to_img_file(obj_img_url)#, style_name)
     url_to_img_file(obj_img_url, file_path)#, style_name)
     remove_background(file_path)
-    return file_path
+
 
 
 
@@ -97,25 +103,26 @@ if __name__ == "__main__":
 
 
   obj_file_path = 'image_generation/generated_images/obj'
+  back_file_path = 'image_generation/generated_images/back'
   # --генерация изображений
-  # back_file_path = generate_and_save_image('back' , object_promt, aspect_ratio, back_file_path, style, color)
-  # obj_file_path = generate_and_save_image('object' , object_promt, aspect_ratio, obj_file_path, style, color)
+  generate_and_save_image('back' , object_promt, back_file_path, style, color)
+  generate_and_save_image('object' , object_promt, obj_file_path, style, color)
 
   obj_file_path = obj_file_path+'_transparent'
 
  
   # --создание шаблона
-  # aspect_ratio = list(aspect_ratios.keys())[0] # ----------- соотношение сторон, 0 - square, 1 - portrait, 2 - landscape
+  aspect_ratio = list(aspect_ratios.keys())[0] # ----------- соотношение сторон, 0 - square, 1 - portrait, 2 - landscape
   # вызов функций create_*_template, в зависимости от выбранного соотношения сторон
-  for aspect_ratio in aspect_ratios.keys(): 
-    img_size = aspect_ratios[aspect_ratio]['size']
-    back_file_path = f'image_generation/generated_images/{aspect_ratio}_back'
+  # for aspect_ratio in aspect_ratios.keys(): 
+  img_size = aspect_ratios[aspect_ratio]['size']
 
-    template_num = 1 # номер шаблона ( 1 - create_square_template_1, 2 - create_square_template_2
-    template_func = aspect_ratios[aspect_ratio]['funcs'][template_num-1]
+  template_num = 1 # номер шаблона ( 1 - create_square_template_1, 2 - create_square_template_2
+  template_func = aspect_ratios[aspect_ratio]['funcs'][template_num-1]
     
-    locals()[aspect_ratios[aspect_ratio][template_func(back_file_path, obj_file_path, img_size, fonts, colors)]]
-
+    # locals()[aspect_ratios[aspect_ratio][template_func(back_file_path, obj_file_path, img_size, fonts, colors)]]
+  print('create_square_template_1')
+  create_square_template_1(back_file_path, obj_file_path, (1024, 1024), fonts, colors)
 
   # тот же вызов функций
   # create_square_template_1('image_generation/generated_images/square_back', obj_file_path, (1024, 1024), fonts, colors)
