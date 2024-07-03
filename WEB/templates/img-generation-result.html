@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <script>
+        const inputUrl = document.getElementById("inputUrl").value;
+        const userTimestamp = new Date().toISOString();
+    
+        fetch(`/img-generation-form?inputUrl=${encodeURIComponent(inputUrl)}&inputText=${encodeURIComponent(userTimestamp)}`, {
+            method: 'GET'
+        })
+            .then(response => response.json())
+            .catch(error => {
+                document.getElementById("result").innerText = `Ошибка: ${error.message}`;
+            });
+    
+    
+    </script>
+<body>
+    <form>
+        <label for="inputUrl">URL</label>
+        <input type="text" name="inputUrl" id="inputUrl" />
+
+        <label for="inputText">text</label>
+        <input type="text" name="inputText" id="inputText" />
+
+        <button type="submit">Submit</button>
+    </form>
+    <div id="result"></div>
+</body>
+
+</html>

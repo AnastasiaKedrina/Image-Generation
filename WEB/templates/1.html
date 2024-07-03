@@ -1,0 +1,63 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <form action="/img-generation-form" method="post" enctype="multipart/form-data">
+        <input type="text" name="url" value="URL изображения"/>
+        <button type="submit">Тык</button>
+    </form>
+</body>
+
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    <!-- <form action="/img-generation-form"> -->
+    <form id="dataForm">
+        <label for="inputUrl">URL</label>
+        <input type="text" name="inputUrl" id="inputUrl" />
+
+        <label for="inputText">text</label>
+        <input type="text" name="inputText" id="inputText" />
+
+        <button type="submit" onclick="convertToJson()">Сохранить json</button>
+    </form>
+    <div id="result"></div>
+</body>
+
+<script>
+    function convertToJson() {
+        let form = document.getElementById("dataForm");
+        let formData = {};
+        for (let i = 0; i < form.elements.length; i++) {
+            let element = form.elements[i];
+            if (element.type !== "submit") {
+                formData[element.name] = element.value;
+            }
+        }
+        let jsonData = JSON.stringify(formData);
+        // let jsonOutput = document.getElementById("jsonOutput");
+        // jsonOutput.innerHTML = "<pre>" + jsonData + "</pre>";
+
+        let body = document.body;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(formData)], {   //, null, 2)], {
+            type: "text/plain"
+        }));
+        a.setAttribute("download", "data.txt");
+        body.appendChild(a);
+        a.click();
+        body.removeChild(a);
+        // new JavascriptDataDownloader(jsonData).download();
+    }
+
+</script>
+
+</html>

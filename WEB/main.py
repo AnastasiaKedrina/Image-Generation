@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Query, HTTPException,File,UploadFile
+from fastapi import FastAPI, Request, Query, HTTPException,File,UploadFile,Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -19,6 +19,7 @@ import datetime
 from collections import deque, defaultdict
 import validators
 import csv
+from typing import Annotated
 
 # Очередь пользователей
 queue = deque()
@@ -565,16 +566,14 @@ async def img_generation_form(request: Request):
     logging.info(f"HTTP GET request to /img-generation-form: {request.client.host}")
     session_token = request.cookies.get("session_token")
     if not session_token:
-        return HTMLResponse(content="<script>window.location.href = '/';</script>", status_code=401)
+        return HTMLResponse(content="<script>window.location.href = '/img-generation-form';</script>", status_code=401)
     query = select(sessions).where(sessions.c.token == session_token)
     session = await database.fetch_one(query)
     if not session:
-        return HTMLResponse(content="<script>window.location.href = '/';</script>", status_code=401)
+        return HTMLResponse(content="<script>window.location.href = '/img-generation-form';</script>", status_code=401)
 
     # user_id = session["user_id"]
     return templates.TemplateResponse("img-generation-form.html", {"request": request, "session": session})
-
-
 
 
 @app.on_event("startup")
