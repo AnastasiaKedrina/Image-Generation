@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,4 +11,29 @@
     </form>
 </body>
 
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation Form</title>
+</head>
+<body>
+    <h1>Image Generation Form</h1>
+    <form action="/img-generation-form" method="post">
+        <label for="description">Image Description:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50"></textarea><br><br>
+        <label for="size">Image Size:</label><br>
+        <select id="size" name="size">
+            <option value="1024x1024">1024x1024</option>
+            <option value="1792x1024">1792x1024</option>
+            <option value="1024x1792">1024x1792</option>
+        </select><br><br>
+        <input type="submit" value="Generate Image">
+    </form>
+    <img width="100px" src="/image_generation/result_templates/result.png" id="result_img">
+</body>
 </html>

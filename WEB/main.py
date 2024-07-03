@@ -20,6 +20,7 @@ from collections import deque, defaultdict
 import validators
 import csv
 from typing import Annotated
+import subprocess
 
 # Очередь пользователей
 queue = deque()
@@ -30,6 +31,7 @@ logging.basicConfig(filename='http_requests.log', level=logging.INFO)
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/image_generation", StaticFiles(directory="image_generation"), name="image_generation")
 templates = Jinja2Templates(directory="templates")
 
 database = Database(DATABASE_URL)
@@ -555,11 +557,24 @@ async def analyze_data(request: Request):
 
 
 
-@app.post("/img-generation-form", response_class=HTMLResponse)
-async def img_generation_form_post(request: Request):
-    url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/a6d21138-ec38-4d7a-8bd0-8fcfbf304f61_0.png'
-    await run_subprocess(['python', 'image_generation/image_generation.py', url])
+# @app.post("/img-generation-form", response_class=HTMLResponse)
+# async def img_generation_form_post(request: Request):
+#     url = 'https://processed-model-result.s3.us-east-2.amazonaws.com/a6d21138-ec38-4d7a-8bd0-8fcfbf304f61_0.png'
+#     await run_subprocess(['python', 'image_generation/image_generation.py', url])
     
+@app.post("/img-generation-form", response_class=HTMLResponse)
+async def img_generation_form_post(request: Request, description: str = Form(...), size: str = Form(...)):
+    input_data = {"description": description, "size": size}
+    input_json = json.dumps(input_data).encode()
+    
+    
+    process = subprocess.Popen(['python', 'image_generation/image_generation.py'], stdin=subprocess.PIPE)
+    process.communicate(input=input_json)
+    # await run_subprocess(['python', 'image_generation/image_generation.py', input_json])
+
+    # return HTMLResponse(content="<p>Image generation started. Check logs for details.</p>")
+    return templates.TemplateResponse("img-generation-form.html", {"request": request, "data": input_json})
+
 
 @app.get("/img-generation-form", response_class=HTMLResponse)
 async def img_generation_form(request: Request):
